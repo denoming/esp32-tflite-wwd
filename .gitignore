@@ -1,3 +1,8 @@
+# Components
+components/esp-nn
+components/kissfft
+components/tflite-lib
+
 # Model artifacts
 model/*
 !model/assets
