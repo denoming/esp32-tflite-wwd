@@ -1,3 +1,12 @@
+# Model artifacts
+model/*
+!model/assets
+!model/*.ipynb
+!model/*.txt
+!model/*.sh
+!model/*.md
+
+# ESP IDF and PlatformIO
 .pio
 .config
 *.o

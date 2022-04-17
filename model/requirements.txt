@@ -1,0 +1,12 @@
+wheel
+tensorflow
+tensorflow-io
+matplotlib
+pandas
+numpy
+jupyter
+scipy
+tqdm
+pyaudio
+jupyter_contrib_nbextensions
+jupyter_nbextensions_configurator
