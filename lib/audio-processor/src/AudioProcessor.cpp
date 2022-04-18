@@ -56,7 +56,7 @@ void AudioProcessor::getSpectrogram(AudioBuffer& buffer, float* outputSpectrogra
         buffer.next();
     }
 
-    for (int windowStart = startIndex; windowStart < startIndex + 16000 - _windowSize; windowStart += _stepSize) {
+    for (int windowStart = startIndex; windowStart < startIndex + _audioLength - _windowSize; windowStart += _stepSize) {
         buffer.seek(windowStart);
         for (int i = 0; i < _windowSize; i++) {
             _fftInput[i] = (static_cast<float>(buffer.peek()) - mean) / max;
