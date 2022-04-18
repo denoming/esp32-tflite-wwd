@@ -10,6 +10,11 @@
 #define I2S_INMP441_WS   (GPIO_NUM_22)
 #define I2S_INMP441_SD   (GPIO_NUM_21)
 
+#define WWD_WINDOW_SIZE  (320)
+#define WWD_STEP_SIZE    (160)
+#define WWD_POOLING_SIZE (6)
+#define WWD_AUDIO_LENGTH (I2S_SAMPLE_RATE)
+
 const i2s_config_t I2S_CONFIG = {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
     .sample_rate = I2S_SAMPLE_RATE,

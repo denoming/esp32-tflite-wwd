@@ -13,11 +13,6 @@
 #include "MemsMicrophone.hpp"
 #include "MemoryPool.hpp"
 
-#define WINDOW_SIZE 320
-#define STEP_SIZE 160
-#define POOLING_SIZE 6
-#define AUDIO_LENGTH 16000
-
 static const char* TAG = "ESP32 TFLITE WWD - Main";
 
 static MemoryPool* memoryPool;
@@ -28,14 +23,14 @@ void applicationTask(void *param)
     NeuralNetwork nn;
     nn.setUp();
 
-    AudioProcessor audioProcessor{AUDIO_LENGTH, WINDOW_SIZE, STEP_SIZE, POOLING_SIZE};
+    AudioProcessor audioProcessor{WWD_AUDIO_LENGTH, WWD_WINDOW_SIZE, WWD_STEP_SIZE, WWD_POOLING_SIZE};
 
     const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
     while (true) {
         uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
         if (ulNotificationValue > 0) {
             auto buffer = mic->buffer();
-            buffer.seek(buffer.pos() - 16000);
+            buffer.seek(buffer.pos() - WWD_WINDOW_SIZE);
             float* inputBuffer = nn.getInputBuffer();
             audioProcessor.getSpectrogram(buffer, inputBuffer);
             const float output = nn.predict();
@@ -53,7 +48,7 @@ extern "C" void app_main() {
     esp_task_wdt_init(10, false);
 
     memoryPool = new MemoryPool;
-    mic = new MemsMicrophone{I2S_PIN_CONFIG, I2S_INMP441_PORT, I2S_CONFIG, memoryPool};
+    mic = new MemsMicrophone{I2S_PIN_CONFIG, I2S_INMP441_PORT, I2S_CONFIG, *memoryPool};
 
     TaskHandle_t applicationTaskHandle;
     xTaskCreate(applicationTask, "Application Task", 8192, nullptr, 1, &applicationTaskHandle);
