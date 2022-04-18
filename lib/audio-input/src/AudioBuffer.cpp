@@ -4,14 +4,13 @@
 
 #include "MemoryPool.hpp"
 
-AudioBuffer::AudioBuffer(MemoryPool* memoryPool)
+AudioBuffer::AudioBuffer(MemoryPool& memoryPool)
     : _memoryPool{memoryPool}
     , _chunk{nullptr}
     , _chunkPos{0}
     , _chunkIdx{0}
 {
-    assert(memoryPool != nullptr);
-    _chunk = memoryPool->get(0);
+    _chunk = memoryPool.get(0);
 }
 
 void AudioBuffer::set(std::int16_t sample)
@@ -34,7 +33,7 @@ bool AudioBuffer::next()
     if (_chunkPos >= MemoryPool::ChunkSize) {
         _chunkPos = 0;
         _chunkIdx = (_chunkIdx + 1) % MemoryPool::ChunkCount;
-        _chunk = _memoryPool->get(_chunkIdx);
+        _chunk = _memoryPool.get(_chunkIdx);
         return true;
     }
     return false;
@@ -60,7 +59,7 @@ void AudioBuffer::seek(int index)
     _chunkPos = (index % MemoryPool::ChunkSize);
 
     assert(_chunkIdx < MemoryPool::ChunkCount);
-    _chunk = _memoryPool->get(_chunkIdx);
+    _chunk = _memoryPool.get(_chunkIdx);
 }
 
 AudioBuffer AudioBuffer::clone()

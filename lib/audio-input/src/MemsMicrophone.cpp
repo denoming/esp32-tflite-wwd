@@ -5,14 +5,13 @@
 #include <freertos/task.h>
 
 #include "Config.hpp"
-#include "AudioBuffer.hpp"
 
 static const char* TAG = "ESP32 TFLITE WWD - MemsMicrophone";
 
 MemsMicrophone::MemsMicrophone(i2s_pin_config_t pins,
                                i2s_port_t port,
                                i2s_config_t config,
-                               MemoryPool* memoryPool)
+                               MemoryPool& memoryPool)
     : _pins{pins}
     , _port{port}
     , _config{config}
@@ -23,11 +22,11 @@ MemsMicrophone::MemsMicrophone(i2s_pin_config_t pins,
 
 bool MemsMicrophone::start(TaskHandle_t waiter)
 {
-    static const int QueueSize = 4;
-    static const uint32_t TaskStackDepth = 4096u;
-    static const UBaseType_t TaskPriority = UBaseType_t(1 | portPRIVILEGE_BIT);
+    static const int kQueueSize = 4;
+    static const uint32_t kTaskStackDepth = 4096u;
+    static const UBaseType_t kTaskPriority = UBaseType_t(1 | portPRIVILEGE_BIT);
 
-    if (i2s_driver_install(_port, &_config, QueueSize, &_queue) != ESP_OK) {
+    if (i2s_driver_install(_port, &_config, kQueueSize, &_queue) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to install I2S driver");
         return false;
     }
@@ -39,8 +38,8 @@ bool MemsMicrophone::start(TaskHandle_t waiter)
 
     _waiter = waiter;
     const auto rv = xTaskCreate(&MemsMicrophone::pullDataTask, "MEMS microphone pull data task",
-        TaskStackDepth,
-        this, TaskPriority,
+        kTaskStackDepth,
+        this, kTaskPriority,
         nullptr);
     if (rv != pdPASS) {
         _waiter = nullptr;
@@ -58,7 +57,8 @@ AudioBuffer MemsMicrophone::buffer()
 
 void MemsMicrophone::pullData()
 {
-    static const TickType_t timeout = 10 / portTICK_PERIOD_MS;
+    static const TickType_t kTimeout = 10 / portTICK_PERIOD_MS;
+    static const std::size_t kBufferSize = I2S_DMA_BUFFER_LEN * I2S_SAMPLE_BYTES * I2S_SAMPLE_BYTES;
 
     i2s_event_t event;
     if (xQueueReceive(_queue, &event, portMAX_DELAY) == pdPASS) {
@@ -66,7 +66,7 @@ void MemsMicrophone::pullData()
             std::size_t bytesRead = 0;
             do {
                 uint8_t buffer[1024];
-                ESP_ERROR_CHECK(i2s_read(_port, buffer, 1024, &bytesRead, 10));
+                ESP_ERROR_CHECK(i2s_read(_port, buffer, 1024, &bytesRead, kTimeout));
                 if (bytesRead > 0) {
                     processData(buffer, bytesRead);
                 }
@@ -77,10 +77,12 @@ void MemsMicrophone::pullData()
 
 void MemsMicrophone::processData(const uint8_t* data, std::size_t size)
 {
+    static const int kDataBitShift = 11;
+
     assert(data != nullptr && size > 0);
-    const int32_t* samples = reinterpret_cast<const int32_t*>(data);
-    for (int i = 0; i < (size / 4); ++i) {
-        if (_buffer.put(samples[i] >> 11)) {
+    const auto* samples = reinterpret_cast<const int32_t*>(data);
+    for (int i = 0; i < size / sizeof(int32_t); ++i) {
+        if (_buffer.put(samples[i] >> kDataBitShift)) {
             xTaskNotify(_waiter, 1, eSetBits);
         }
     }

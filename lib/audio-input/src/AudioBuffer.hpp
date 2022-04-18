@@ -7,7 +7,7 @@ class MemoryPool;
 
 class AudioBuffer {
 public:
-    explicit AudioBuffer(MemoryPool* memoryPool);
+    explicit AudioBuffer(MemoryPool& memoryPool);
 
     void set(std::int16_t sample);
 
@@ -26,7 +26,7 @@ public:
     AudioBuffer clone();
 
 private:
-    MemoryPool* _memoryPool;
+    MemoryPool& _memoryPool;
     std::int16_t* _chunk;
     std::size_t _chunkPos;
     std::size_t _chunkIdx;
