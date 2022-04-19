@@ -1,10 +1,7 @@
 #include <freertos/FreeRTOS.h>
-#include <driver/i2s.h>
 
 #include <esp_err.h>
 #include <esp_log.h>
-
-#include <esp_task_wdt.h>
 
 #include "Config.hpp"
 #include "NeuralNetwork.hpp"
@@ -15,44 +12,36 @@
 
 static const char* TAG = "ESP32 TFLITE WWD - Main";
 
-static MemoryPool* memoryPool;
-static MemsMicrophone* mic;
-
-void applicationTask(void *param)
+extern "C" void app_main()
 {
+    static const TickType_t kMaxBlockTime = pdMS_TO_TICKS(100);
+    static const float kDetectionThreshold = 0.9;
+
     NeuralNetwork nn;
-    nn.setUp();
+    if (!nn.setUp()) {
+        ESP_LOGE(TAG, "Failed to set-up neural network");
+        vTaskSuspend(NULL);
+    }
+
+    MemoryPool memoryPool;
+    MemsMicrophone mic{I2S_PIN_CONFIG, I2S_INMP441_PORT, I2S_CONFIG, memoryPool};
+    if (!mic.start(xTaskGetCurrentTaskHandle())) {
+        ESP_LOGE(TAG, "Failed to start microphone");
+        vTaskSuspend(NULL);
+    }
 
     AudioProcessor audioProcessor{WWD_AUDIO_LENGTH, WWD_WINDOW_SIZE, WWD_STEP_SIZE, WWD_POOLING_SIZE};
-
-    const TickType_t xMaxBlockTime = pdMS_TO_TICKS(100);
     while (true) {
-        uint32_t ulNotificationValue = ulTaskNotifyTake(pdTRUE, xMaxBlockTime);
-        if (ulNotificationValue > 0) {
-            auto buffer = mic->buffer();
+        const uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, kMaxBlockTime);
+        if (notificationValue > 0) {
+            auto buffer = mic.buffer();
             buffer.seek(buffer.pos() - WWD_WINDOW_SIZE);
             float* inputBuffer = nn.getInputBuffer();
             audioProcessor.getSpectrogram(buffer, inputBuffer);
             const float output = nn.predict();
-            if (output > 0.5) {
+            if (output > kDetectionThreshold) {
                 ESP_LOGI(TAG, "Detected: %.2f", output);
-            } else {
-                ESP_LOGI(TAG, "Not Detected: %.2f", output);
             }
         }
-    }
-}
-
-extern "C" void app_main() {
-    // make sure we don't get killed for our long running tasks
-    esp_task_wdt_init(10, false);
-
-    memoryPool = new MemoryPool;
-    mic = new MemsMicrophone{I2S_PIN_CONFIG, I2S_INMP441_PORT, I2S_CONFIG, *memoryPool};
-
-    TaskHandle_t applicationTaskHandle;
-    xTaskCreate(applicationTask, "Application Task", 8192, nullptr, 1, &applicationTaskHandle);
-    if (!mic->start(applicationTaskHandle)) {
-        ESP_LOGE(TAG, "Failed to start microphone");
     }
 }
