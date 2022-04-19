@@ -22,9 +22,9 @@ MemsMicrophone::MemsMicrophone(i2s_pin_config_t pins,
 
 bool MemsMicrophone::start(TaskHandle_t waiter)
 {
-    static const int kQueueSize = 4;
+    static const int kQueueSize = 8;
     static const uint32_t kTaskStackDepth = 4096u;
-    static const UBaseType_t kTaskPriority = UBaseType_t(1 | portPRIVILEGE_BIT);
+    static const UBaseType_t kTaskPriority = UBaseType_t((tskIDLE_PRIORITY + 1) | portPRIVILEGE_BIT);
 
     if (i2s_driver_install(_port, &_config, kQueueSize, &_queue) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to install I2S driver");
@@ -57,7 +57,7 @@ AudioBuffer MemsMicrophone::buffer()
 
 void MemsMicrophone::pullData()
 {
-    static const TickType_t kTimeout = 10 / portTICK_PERIOD_MS;
+    static const TickType_t kTimeout = 100 / portTICK_PERIOD_MS;
     static const std::size_t kBufferSize = I2S_DMA_BUFFER_LEN * I2S_SAMPLE_BYTES * I2S_SAMPLE_BYTES;
 
     i2s_event_t event;
@@ -65,8 +65,8 @@ void MemsMicrophone::pullData()
         if (event.type == I2S_EVENT_RX_DONE) {
             std::size_t bytesRead = 0;
             do {
-                uint8_t buffer[1024];
-                ESP_ERROR_CHECK(i2s_read(_port, buffer, 1024, &bytesRead, kTimeout));
+                uint8_t buffer[kBufferSize];
+                ESP_ERROR_CHECK(i2s_read(_port, buffer, kBufferSize, &bytesRead, kTimeout));
                 if (bytesRead > 0) {
                     processData(buffer, bytesRead);
                 }
@@ -78,9 +78,9 @@ void MemsMicrophone::pullData()
 void MemsMicrophone::processData(const uint8_t* data, std::size_t size)
 {
     static const int kDataBitShift = 11;
-
-    assert(data != nullptr && size > 0);
+    
     const auto* samples = reinterpret_cast<const int32_t*>(data);
+    assert(samples != nullptr);
     for (int i = 0; i < size / sizeof(int32_t); ++i) {
         if (_buffer.put(samples[i] >> kDataBitShift)) {
             xTaskNotify(_waiter, 1, eSetBits);
