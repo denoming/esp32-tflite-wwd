@@ -6,60 +6,42 @@
 
 AudioBuffer::AudioBuffer(MemoryPool& memoryPool)
     : _memoryPool{memoryPool}
-    , _chunk{nullptr}
-    , _chunkPos{0}
-    , _chunkIdx{0}
+    , _index{0}
 {
-    _chunk = memoryPool.get(0);
 }
 
 void AudioBuffer::set(std::int16_t sample)
 {
-    assert(_chunk != nullptr);
-    assert(_chunkPos < MemoryPool::ChunkSize);
-    _chunk[_chunkPos] = sample;
+    assert(_index < MemoryPool::capacity());
+    _memoryPool.set(_index, sample);
 }
 
 std::int16_t AudioBuffer::peek() const
 {
-    assert(_chunk != nullptr);
-    assert(_chunkPos < MemoryPool::ChunkSize);
-    return _chunk[_chunkPos];
+    assert(_index < MemoryPool::capacity());
+    return _memoryPool.get(_index);
 }
 
-bool AudioBuffer::next()
+void AudioBuffer::next()
 {
-    _chunkPos++;
-    if (_chunkPos >= MemoryPool::ChunkSize) {
-        _chunkPos = 0;
-        _chunkIdx = (_chunkIdx + 1) % MemoryPool::ChunkCount;
-        _chunk = _memoryPool.get(_chunkIdx);
-        return true;
-    }
-    return false;
+    _index = (_index + 1) % MemoryPool::capacity();
 }
 
-bool AudioBuffer::put(std::int16_t sample)
+void AudioBuffer::put(std::int16_t sample)
 {
     set(sample);
-    return next();
+    next();
 }
 
 int AudioBuffer::pos() const
 {
-    return (_chunkIdx * MemoryPool::ChunkSize + _chunkPos);
+    return _index;
 }
 
 void AudioBuffer::seek(int index)
 {
     int totalSize = MemoryPool::capacity();
-    index  = (index + totalSize) % totalSize;
-
-    _chunkIdx = (index / MemoryPool::ChunkSize) % MemoryPool::ChunkCount;
-    _chunkPos = (index % MemoryPool::ChunkSize);
-
-    assert(_chunkIdx < MemoryPool::ChunkCount);
-    _chunk = _memoryPool.get(_chunkIdx);
+    _index  = (index + totalSize) % totalSize;
 }
 
 AudioBuffer AudioBuffer::clone()

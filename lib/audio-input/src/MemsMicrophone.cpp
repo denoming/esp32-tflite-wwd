@@ -55,44 +55,56 @@ AudioBuffer MemsMicrophone::buffer()
     return _buffer.clone();
 }
 
-void MemsMicrophone::pullData()
+std::size_t MemsMicrophone::pullData(uint8_t* buffer, std::size_t size)
 {
     static const TickType_t kTimeout = 100 / portTICK_PERIOD_MS;
-    static const std::size_t kBufferSize = I2S_DMA_BUFFER_LEN * I2S_SAMPLE_BYTES * I2S_SAMPLE_BYTES;
-
+    
+    std::size_t bytesRead{0};
     i2s_event_t event;
     if (xQueueReceive(_queue, &event, portMAX_DELAY) == pdPASS) {
         if (event.type == I2S_EVENT_RX_DONE) {
-            std::size_t bytesRead = 0;
-            do {
-                uint8_t buffer[kBufferSize];
-                ESP_ERROR_CHECK(i2s_read(_port, buffer, kBufferSize, &bytesRead, kTimeout));
-                if (bytesRead > 0) {
-                    processData(buffer, bytesRead);
-                }
-            } while (bytesRead > 0);
+            ESP_ERROR_CHECK(i2s_read(_port, buffer, size, &bytesRead, kTimeout));
         }
     }
+    return bytesRead;
 }
 
-void MemsMicrophone::processData(const uint8_t* data, std::size_t size)
+void MemsMicrophone::processData(const uint8_t* buffer, std::size_t size)
 {
     static const int kDataBitShift = 11;
     
-    const auto* samples = reinterpret_cast<const int32_t*>(data);
+    const auto* samples = reinterpret_cast<const int32_t*>(buffer);
     assert(samples != nullptr);
     for (int i = 0; i < size / sizeof(int32_t); ++i) {
-        if (_buffer.put(samples[i] >> kDataBitShift)) {
-            xTaskNotify(_waiter, 1, eSetBits);
-        }
+        _buffer.put(samples[i] >> kDataBitShift);
     }
 }
 
 void MemsMicrophone::pullDataTask(void* param)
 {
+    static const std::size_t kNotifyThreshold = 1600;
+    static const std::size_t kBufferSize = I2S_DMA_BUFFER_LEN * I2S_SAMPLE_BYTES * I2S_SAMPLE_BYTES;
+
     assert(param != nullptr);
     MemsMicrophone* mic = static_cast<MemsMicrophone*>(param);
-    while(true) {
-        mic->pullData();
+
+    std::size_t totalBytes{0};
+    uint8_t buffer[kBufferSize];
+    while (true) {
+        std::size_t bytesRead{0};
+        bytesRead = mic->pullData(buffer, kBufferSize);
+        if (bytesRead > 0) {
+            mic->processData(buffer, bytesRead);
+            totalBytes += bytesRead;
+            if (totalBytes >= kNotifyThreshold) {
+                totalBytes -= kNotifyThreshold;
+                mic->notify();
+            }
+        }
     }
+}
+
+void MemsMicrophone::notify()
+{
+    xTaskNotify(_waiter, 1, eSetBits);
 }

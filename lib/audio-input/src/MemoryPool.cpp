@@ -16,9 +16,19 @@ MemoryPool::~MemoryPool()
     }
 }
 
-std::int16_t* MemoryPool::get(std::size_t index)
+void MemoryPool::set(std::size_t index, std::uint16_t value)
 {
-    assert(index < ChunkCount);
-    return _chunks[index]->payload();
+    assert(index < capacity());
+    const long chunkIdx = (index / ChunkSize) % ChunkCount;
+    const long chunkPos = (index % ChunkSize);
+    _chunks[chunkIdx]->set(chunkPos, value);
+}
+
+std::uint16_t MemoryPool::get(std::size_t index) const
+{
+    assert(index < capacity());
+    const long chunkIdx = (index / ChunkSize) % ChunkCount;
+    const long chunkPos = (index % ChunkSize);
+    return _chunks[chunkIdx]->get(chunkPos);
 }
 

@@ -2,7 +2,7 @@
 
 #include <array>
 
-class MemoryPool {
+class MemoryPool final {
 public:
     static const std::size_t ChunkCount = 10;
     static const std::size_t ChunkSize = 1600;
@@ -14,9 +14,14 @@ public:
             _payload.fill(0);
         }
 
-        std::int16_t* payload()
+        void set(std::size_t index, std::uint16_t value)
         {
-            return _payload.data();
+            _payload[index] = value;
+        }
+
+        std::uint16_t get(std::size_t index) const
+        {
+            return _payload[index];
         }
 
     private:
@@ -28,9 +33,11 @@ public:
 
     ~MemoryPool();
 
-    std::int16_t* get(std::size_t index);
-
     static inline std::size_t capacity();
+
+    void set(std::size_t index, std::uint16_t value);
+
+    std::uint16_t get(std::size_t index) const;
 
 private:
     std::array<Chunk*, ChunkCount> _chunks;
