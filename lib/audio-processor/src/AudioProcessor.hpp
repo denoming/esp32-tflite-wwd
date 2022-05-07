@@ -6,7 +6,7 @@
 
 class AudioBuffer;
 
-class AudioProcessor {
+class AudioProcessor final {
 public:
     AudioProcessor(int audioLength, int windowSize, int stepSize, int poolingSize);
 
@@ -23,12 +23,13 @@ private:
     int _stepSize;
     int _poolingSize;
 
-    size_t _fftSize;
+    int _fftSize;
     std::unique_ptr<float[]> _fftInput;
     std::unique_ptr<kiss_fft_cpx[]> _fftOutput;
     std::unique_ptr<float[]> _energy;
     int _energySize;
     int _pooledEnergySize;
+
     kiss_fftr_cfg _cfg;
 
     HammingWindow _hammingWindow;
