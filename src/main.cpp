@@ -35,7 +35,7 @@ extern "C" void app_main()
         const uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, kMaxBlockTime);
         if (notificationValue > 0) {
             auto buffer = mic.buffer();
-            buffer.seek(buffer.pos() - WWD_WINDOW_SIZE);
+            buffer.seek(buffer.pos() - I2S_SAMPLE_RATE);
             float* inputBuffer = nn.getInputBuffer();
             audioProcessor.getSpectrogram(buffer, inputBuffer);
             const float output = nn.predict();
