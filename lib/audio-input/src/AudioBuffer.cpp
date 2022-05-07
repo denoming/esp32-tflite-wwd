@@ -16,21 +16,23 @@ void AudioBuffer::set(std::int16_t sample)
     _memoryPool.set(_index, sample);
 }
 
-std::int16_t AudioBuffer::peek() const
+std::int16_t AudioBuffer::get() const
 {
     assert(_index < MemoryPool::capacity());
     return _memoryPool.get(_index);
-}
-
-void AudioBuffer::next()
-{
-    _index = (_index + 1) % MemoryPool::capacity();
 }
 
 void AudioBuffer::put(std::int16_t sample)
 {
     set(sample);
     next();
+}
+
+std::int16_t AudioBuffer::next()
+{
+    std::int16_t sample = get();
+    _index = (_index + 1) % MemoryPool::capacity();
+    return sample;
 }
 
 int AudioBuffer::pos() const

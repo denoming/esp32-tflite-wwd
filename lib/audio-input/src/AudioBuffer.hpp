@@ -11,11 +11,11 @@ public:
 
     void set(std::int16_t sample);
 
-    std::int16_t peek() const;
-
-    void next();
+    std::int16_t get() const;
 
     void put(std::int16_t sample);
+
+    std::int16_t next();
 
     int pos() const;
 

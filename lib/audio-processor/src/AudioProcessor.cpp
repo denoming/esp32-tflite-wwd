@@ -44,23 +44,20 @@ void AudioProcessor::getSpectrogram(AudioBuffer& buffer, float* outputSpectrogra
     int startIndex = buffer.pos();
     float mean = 0;
     for (int i = 0; i < _audioLength; i++) {
-        mean += buffer.peek();
-        buffer.next();
+        mean += buffer.next();
     }
     mean /= _audioLength;
 
     buffer.seek(startIndex);
     float max = 0;
     for (int i = 0; i < _audioLength; i++) {
-        max = std::max(max, fabsf(static_cast<float>(buffer.peek()) - mean));
-        buffer.next();
+        max = std::max(max, fabsf(static_cast<float>(buffer.next()) - mean));
     }
 
     for (int windowStart = startIndex; windowStart < startIndex + _audioLength - _windowSize; windowStart += _stepSize) {
         buffer.seek(windowStart);
         for (int i = 0; i < _windowSize; i++) {
-            _fftInput[i] = (static_cast<float>(buffer.peek()) - mean) / max;
-            buffer.next();
+            _fftInput[i] = (static_cast<float>(buffer.next()) - mean) / max;
         }
         for (int i = _windowSize; i < _fftSize; i++) {
             _fftInput[i] = 0;
