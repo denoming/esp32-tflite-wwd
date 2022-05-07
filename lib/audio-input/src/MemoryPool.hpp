@@ -4,8 +4,8 @@
 
 class MemoryPool final {
 public:
-    static const std::size_t ChunkCount = 10;
-    static const std::size_t ChunkSize = 1600;
+    static const std::size_t ChunkCount = 5;
+    static const std::size_t ChunkSize = 16000;
 
     class Chunk {
     public:
