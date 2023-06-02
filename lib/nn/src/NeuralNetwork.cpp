@@ -1,24 +1,26 @@
 #include "NeuralNetwork.hpp"
 
+#include "Model.hpp"
+
 #include <tensorflow/lite/micro/all_ops_resolver.h>
-#include <tensorflow/lite/micro/micro_error_reporter.h>
 #include <tensorflow/lite/micro/micro_interpreter.h>
 #include <tensorflow/lite/schema/schema_generated.h>
 
-#include "Model.hpp"
+#include <esp_err.h>
+#include <esp_log.h>
 
 static const int kArenaSize = 25000;
+
+static const char* TAG = "ESP32 - NN";
 
 NeuralNetwork::NeuralNetwork()
     : _arena{nullptr}
     , _model{nullptr}
     , _resolver{nullptr}
     , _interpreter{nullptr}
-    , _reporter{nullptr}
     , _input{nullptr}
     , _output{nullptr}
 {
-    _reporter = tflite::GetMicroErrorReporter();
 }
 
 bool NeuralNetwork::setUp()
@@ -26,7 +28,7 @@ bool NeuralNetwork::setUp()
     if (!_arena) {
         _arena = new (std::nothrow) uint8_t[kArenaSize];
         if (!_arena) {
-            TF_LITE_REPORT_ERROR(_reporter, "Failed to allocate memory for arena");
+            ESP_LOGE(TAG, "Failed to allocate memory for arena");
             return false;
         }
     }
@@ -34,8 +36,10 @@ bool NeuralNetwork::setUp()
     if (!_model) {
         _model = tflite::GetModel(TF_MODEL);
         if (_model->version() != TFLITE_SCHEMA_VERSION) {
-            TF_LITE_REPORT_ERROR(_reporter, "Model provided is schema version %d not equal to supported version %d.",
-                                _model->version(), TFLITE_SCHEMA_VERSION);
+            ESP_LOGE(TAG,
+                     "Invalid model <%d> while <%d> expected",
+                     _model->version(),
+                     TFLITE_SCHEMA_VERSION);
             _model = nullptr;
             return false;
         }
@@ -52,20 +56,20 @@ bool NeuralNetwork::setUp()
     _resolver->AddQuantize();
     _resolver->AddDequantize();
 
-    _interpreter = new (std::nothrow) tflite::MicroInterpreter(_model, *_resolver, _arena, kArenaSize, _reporter);
+    _interpreter = new (std::nothrow) tflite::MicroInterpreter(_model, *_resolver, _arena, kArenaSize);
     if (!_interpreter) {
-        TF_LITE_REPORT_ERROR(_reporter, "Failed to instantiate interpreter");
+        ESP_LOGE(TAG, "Failed to instantiate interpreter");
         return false;
     }
 
     const auto status = _interpreter->AllocateTensors();
     if (status != kTfLiteOk) {
-        TF_LITE_REPORT_ERROR(_reporter, "AllocateTensors() failed");
+        ESP_LOGE(TAG, "AllocateTensors() failed");
         tearDown();
         return false;
     }
     size_t usedBytes = _interpreter->arena_used_bytes();
-    TF_LITE_REPORT_ERROR(_reporter, "Used bytes %d\n", usedBytes);
+    ESP_LOGD(TAG, "Used bytes %d\n", usedBytes);
 
     _input = _interpreter->input(0);
     _output = _interpreter->output(0);
@@ -79,8 +83,6 @@ void NeuralNetwork::tearDown()
 
     delete _interpreter;
     delete _resolver;
-    // free(m_tensor_arena);
-    // delete m_error_reporter;
 }
 
 float* NeuralNetwork::getInputBuffer()
