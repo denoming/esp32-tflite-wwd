@@ -2,10 +2,12 @@
 
 #include <array>
 
+#include <esp_types.h>
+
 class MemoryPool final {
 public:
-    static const std::size_t ChunkCount = 5;
-    static const std::size_t ChunkSize = 16000;
+    static const size_t ChunkCount = 5;
+    static const size_t ChunkSize = 16000;
 
     class Chunk {
     public:
@@ -14,18 +16,18 @@ public:
             _payload.fill(0);
         }
 
-        void set(std::size_t index, std::uint16_t value)
+        void set(size_t index, uint16_t value)
         {
             _payload[index] = value;
         }
 
-        std::uint16_t get(std::size_t index) const
+        uint16_t get(size_t index) const
         {
             return _payload[index];
         }
 
     private:
-        std::array<std::int16_t, ChunkSize> _payload;
+        std::array<int16_t, ChunkSize> _payload;
     };
 
 public:
@@ -33,11 +35,11 @@ public:
 
     ~MemoryPool();
 
-    static inline std::size_t capacity();
+    static inline size_t capacity();
 
-    void set(std::size_t index, std::uint16_t value);
+    void set(size_t index, uint16_t value);
 
-    std::uint16_t get(std::size_t index) const;
+    uint16_t get(size_t index) const;
 
 private:
     std::array<Chunk*, ChunkCount> _chunks;
@@ -45,7 +47,7 @@ private:
 
 // Inlines
 
-std::size_t MemoryPool::capacity()
+size_t MemoryPool::capacity()
 {
     return (ChunkCount * ChunkSize);
 }

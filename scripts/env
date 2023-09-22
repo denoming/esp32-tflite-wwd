@@ -1,8 +1,0 @@
-
-# TensorFlow Lite (URL+HASH)
-TFL_SRC="https://github.com/espressif/tflite-micro-esp-examples.git"
-TFL_SRC_HASH="11797d4"
-
-# KissFFT (URL+HASH)
-KISSFFT_SRC="https://github.com/karz0n/esp32-kissfft.git"
-KISSFFT_HASH="f09d57c"
