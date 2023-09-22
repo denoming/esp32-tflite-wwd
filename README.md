@@ -1,35 +1,30 @@
 # ESP32 TFLITE WWD
 
 The wake word detection sample for ESP32 boards.
-Present TensorFlow model is trained for "Marvin" word and provide quite high accuracy.
-The `model` subdir contains instructions how to train model for any other word.
+Presented model is trained for "Marvin" wake word and provide quite high accuracy.
+The `model` subdir contains instructions how to train model for custom wake word.
 
-The project involde using ESP32 kind devices (e.g. Espressif ESP32 Dev Module) and INMP441 mems microphone with quite high quality. Particular pinout between ESP32 and mic is presented at `Configure` section.
+The project involves using ESP32 kind devices (e.g. Espressif ESP32 Dev Module) and INMP441 mems microphone with quite high quality.
+Particular pin-out between ESP32 and mic is presented at `Pins` section.
 
 ## Dependencies
 
-* ESP-IDF (ver. 4.4.3)
-* TensorFlow Lite Micro ([repository](https://github.com/espressif/tflite-micro-esp-examples.git))
-* KissFFT ([repository](https://github.com/karz0n/esp32-kissfft.git))
+* Platform.io toolkit
+* ESP-IDF (ver. 5.1)
+* TensorFlow Lite Micro (git submodule)
+* ESP-NN (git submodule)
+* KissFFT (git submodule)
 
-Note: The TensorFlow Lite component is responsible for recognizing wake word using trained model and gistogram of recorded sound.
+Note: The TensorFlow Lite component is responsible for recognizing wake word using trained model and histogram of recorded sound.
 
-Note: The KissFFT component is responsible for making gistogram of recorded sound.
+Note: The KissFFT component is responsible for making histogram of recorded sound.
 
-## Prepare
+## Pins
 
-* Clone dependencies using helpfull script:
-```shell
-$ cd <project-path>
-$ bash scripts/setup.sh
-```
-
-## Configure
-
-The pinout for INMP441 sensor is next:
+The pin-out for INMP441 sensor is next:
 
 | INMP441 | ESP32  | Info                          |
-| ------- | ------ | ----------------------------- |
+|---------|--------|-------------------------------|
 | L/R     | GND    | Left channel or right channel |
 | WS      | GPIO22 | Left right clock              |
 | SCK     | GPIO26 | Serial clock                  |
@@ -39,6 +34,24 @@ The pinout for INMP441 sensor is next:
 
 Configuration locates at `lib/config/Config.hpp` file.
 
-## Using
+## Build
 
-Open this project using Visual Studio Code with previously configured PlatformIO environment, build and upload to device as usual.
+* Clone
+```shell
+$ git clone <url>
+$ cd esp32-tflite-wwd
+$ git submodule update --init --recursive
+```
+* Build
+```shell
+$ pio run -t menuconfig
+$ pio run
+```
+* Upload
+```shell
+$ pio run -t upload
+```
+* Connect
+```shell
+$ pio run -t monitor
+```
