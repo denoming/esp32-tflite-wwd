@@ -19,7 +19,8 @@ NeuralNetwork::NeuralNetwork()
 {
 }
 
-bool NeuralNetwork::setUp()
+bool
+NeuralNetwork::setUp()
 {
     if (!_arena) {
         _arena = new (std::nothrow) uint8_t[kArenaSize];
@@ -52,7 +53,8 @@ bool NeuralNetwork::setUp()
     _resolver->AddQuantize();
     _resolver->AddDequantize();
 
-    _interpreter = new (std::nothrow) tflite::MicroInterpreter(_model, *_resolver, _arena, kArenaSize);
+    _interpreter
+        = new (std::nothrow) tflite::MicroInterpreter(_model, *_resolver, _arena, kArenaSize);
     if (!_interpreter) {
         ESP_LOGE(TAG, "Failed to instantiate interpreter");
         return false;
@@ -73,7 +75,8 @@ bool NeuralNetwork::setUp()
     return true;
 }
 
-void NeuralNetwork::tearDown()
+void
+NeuralNetwork::tearDown()
 {
     _input = _output = nullptr;
 
@@ -81,12 +84,14 @@ void NeuralNetwork::tearDown()
     delete _resolver;
 }
 
-float* NeuralNetwork::getInputBuffer()
+float*
+NeuralNetwork::getInputBuffer()
 {
     return _input->data.f;
 }
 
-float NeuralNetwork::predict()
+float
+NeuralNetwork::predict()
 {
     _interpreter->Invoke();
     return _output->data.f[0];

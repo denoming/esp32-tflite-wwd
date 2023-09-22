@@ -12,25 +12,30 @@ public:
                    i2s_config_t config,
                    MemoryPool& memoryPool);
 
-    bool start(TaskHandle_t waiter) override;
+    bool
+    start(TaskHandle_t waiter) override;
 
-    AudioBuffer buffer();
+    AudioBuffer
+    buffer();
 
 private:
-    std::size_t pullData(uint8_t* buffer, std::size_t size);
+    size_t
+    pullData(uint8_t* buffer, size_t size);
 
-    void processData(const uint8_t* buffer, std::size_t size);
+    void
+    processData(const uint8_t* buffer, size_t size);
 
-    void notify();
+    void
+    notify();
 
-    static void pullDataTask(void* param);
+    static void
+    pullDataTask(void* param);
 
 private:
     i2s_pin_config_t _pins;
     i2s_port_t _port;
     i2s_config_t _config;
     AudioBuffer _buffer;
-    QueueHandle_t _queue;    
+    QueueHandle_t _queue;
     TaskHandle_t _waiter;
 };
-

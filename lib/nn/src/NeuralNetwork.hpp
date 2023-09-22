@@ -10,13 +10,17 @@ class NeuralNetwork {
 public:
     NeuralNetwork();
 
-    bool setUp();
+    bool
+    setUp();
 
-    void tearDown();
+    void
+    tearDown();
 
-    float* getInputBuffer();
+    float*
+    getInputBuffer();
 
-    float predict();
+    float
+    predict();
 
 private:
     uint8_t* _arena;

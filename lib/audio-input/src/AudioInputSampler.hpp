@@ -6,5 +6,7 @@ class AudioInputSampler {
 public:
     virtual ~AudioInputSampler() = default;
 
-    virtual bool start(TaskHandle_t waiter) = 0;
+    virtual bool
+    start(TaskHandle_t waiter)
+        = 0;
 };

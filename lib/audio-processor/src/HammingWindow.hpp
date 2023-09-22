@@ -6,7 +6,8 @@ class HammingWindow {
 public:
     HammingWindow(int windowSize);
 
-    void applyWindow(float* input);
+    void
+    applyWindow(float* input);
 
 private:
     std::unique_ptr<float[]> _coefficients;

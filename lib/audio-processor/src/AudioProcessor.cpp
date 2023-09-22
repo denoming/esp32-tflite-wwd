@@ -6,7 +6,8 @@
 
 namespace {
 
-int getInputSize(int windowSize)
+int
+getInputSize(int windowSize)
 {
     int size = 1;
     while (size < windowSize) {
@@ -15,7 +16,8 @@ int getInputSize(int windowSize)
     return size;
 }
 
-float getMeanValue(AudioBuffer buffer, int audioLength)
+float
+getMeanValue(AudioBuffer buffer, int audioLength)
 {
     float mean{0.0};
     for (int i = 0; i < audioLength; i++) {
@@ -24,7 +26,8 @@ float getMeanValue(AudioBuffer buffer, int audioLength)
     return (mean / audioLength);
 }
 
-float getMaxDeviationValue(AudioBuffer buffer, int audioLength, float mean)
+float
+getMaxDeviationValue(AudioBuffer buffer, int audioLength, float mean)
 {
     float max{0.0};
     for (int i = 0; i < audioLength; i++) {
@@ -33,7 +36,7 @@ float getMaxDeviationValue(AudioBuffer buffer, int audioLength, float mean)
     return max;
 }
 
-}
+} // namespace
 
 AudioProcessor::AudioProcessor(int audioLength, int windowSize, int stepSize, int poolingSize)
     : _audioLength{audioLength}
@@ -57,13 +60,15 @@ AudioProcessor::~AudioProcessor()
     free(_cfg);
 }
 
-void AudioProcessor::getSpectrogram(AudioBuffer& buffer, float* outputSpectrogram)
+void
+AudioProcessor::getSpectrogram(AudioBuffer& buffer, float* outputSpectrogram)
 {
     const float mean = getMeanValue(buffer, _audioLength);
     const float maxDeviation = getMaxDeviationValue(buffer, _audioLength, mean);
 
     const int startIndex = buffer.pos();
-    for (int windowStart = startIndex; windowStart < startIndex + _audioLength - _windowSize; windowStart += _stepSize) {
+    for (int windowStart = startIndex; windowStart < startIndex + _audioLength - _windowSize;
+         windowStart += _stepSize) {
         buffer.seek(windowStart);
         for (int i = 0; i < _windowSize; i++) {
             _fftInput[i] = (static_cast<float>(buffer.next()) - mean) / maxDeviation;
@@ -76,14 +81,12 @@ void AudioProcessor::getSpectrogram(AudioBuffer& buffer, float* outputSpectrogra
     }
 }
 
-void AudioProcessor::getSpectrogramSegment(float* outputSpectrogramRow)
+void
+AudioProcessor::getSpectrogramSegment(float* outputSpectrogramRow)
 {
     _hammingWindow.applyWindow(_fftInput.get());
 
-    kiss_fftr(
-        _cfg,
-        _fftInput.get(),
-        _fftOutput.get());
+    kiss_fftr(_cfg, _fftInput.get(), _fftOutput.get());
 
     for (int i = 0; i < _energySize; i++) {
         const float real = _fftOutput[i].r;

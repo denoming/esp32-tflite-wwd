@@ -16,7 +16,8 @@ MemoryPool::~MemoryPool()
     }
 }
 
-void MemoryPool::set(size_t index, uint16_t value)
+void
+MemoryPool::set(size_t index, uint16_t value)
 {
     assert(index < capacity());
     const long chunkIdx = (index / ChunkSize) % ChunkCount;
@@ -24,11 +25,11 @@ void MemoryPool::set(size_t index, uint16_t value)
     _chunks[chunkIdx]->set(chunkPos, value);
 }
 
-uint16_t MemoryPool::get(size_t index) const
+uint16_t
+MemoryPool::get(size_t index) const
 {
     assert(index < capacity());
     const long chunkIdx = (index / ChunkSize) % ChunkCount;
     const long chunkPos = (index % ChunkSize);
     return _chunks[chunkIdx]->get(chunkPos);
 }
-

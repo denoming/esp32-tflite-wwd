@@ -20,11 +20,13 @@ MemsMicrophone::MemsMicrophone(i2s_pin_config_t pins,
 {
 }
 
-bool MemsMicrophone::start(TaskHandle_t waiter)
+bool
+MemsMicrophone::start(TaskHandle_t waiter)
 {
     static const int kQueueSize = 8;
     static const uint32_t kTaskStackDepth = 4096u;
-    static const UBaseType_t kTaskPriority = UBaseType_t((tskIDLE_PRIORITY + 1) | portPRIVILEGE_BIT);
+    static const UBaseType_t kTaskPriority
+        = UBaseType_t((tskIDLE_PRIORITY + 1) | portPRIVILEGE_BIT);
 
     if (i2s_driver_install(_port, &_config, kQueueSize, &_queue) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to install I2S driver");
@@ -37,10 +39,12 @@ bool MemsMicrophone::start(TaskHandle_t waiter)
     }
 
     _waiter = waiter;
-    const auto rv = xTaskCreate(&MemsMicrophone::pullDataTask, "MEMS microphone pull data task",
-        kTaskStackDepth,
-        this, kTaskPriority,
-        nullptr);
+    const auto rv = xTaskCreate(&MemsMicrophone::pullDataTask,
+                                "MEMS microphone pull data task",
+                                kTaskStackDepth,
+                                this,
+                                kTaskPriority,
+                                nullptr);
     if (rv != pdPASS) {
         _waiter = nullptr;
         ESP_LOGE(TAG, "Failed to create pull data task");
@@ -50,16 +54,18 @@ bool MemsMicrophone::start(TaskHandle_t waiter)
     return true;
 }
 
-AudioBuffer MemsMicrophone::buffer()
+AudioBuffer
+MemsMicrophone::buffer()
 {
     return _buffer.clone();
 }
 
-std::size_t MemsMicrophone::pullData(uint8_t* buffer, std::size_t size)
+size_t
+MemsMicrophone::pullData(uint8_t* buffer, size_t size)
 {
     static const TickType_t kTimeout = 100 / portTICK_PERIOD_MS;
-    
-    std::size_t bytesRead{0};
+
+    size_t bytesRead{0};
     i2s_event_t event;
     if (xQueueReceive(_queue, &event, portMAX_DELAY) == pdPASS) {
         if (event.type == I2S_EVENT_RX_DONE) {
@@ -69,10 +75,11 @@ std::size_t MemsMicrophone::pullData(uint8_t* buffer, std::size_t size)
     return bytesRead;
 }
 
-void MemsMicrophone::processData(const uint8_t* buffer, std::size_t size)
+void
+MemsMicrophone::processData(const uint8_t* buffer, size_t size)
 {
     static const int kDataBitShift = 11;
-    
+
     const auto* samples = reinterpret_cast<const int32_t*>(buffer);
     assert(samples != nullptr);
     for (int i = 0; i < size / sizeof(int32_t); ++i) {
@@ -80,18 +87,19 @@ void MemsMicrophone::processData(const uint8_t* buffer, std::size_t size)
     }
 }
 
-void MemsMicrophone::pullDataTask(void* param)
+void
+MemsMicrophone::pullDataTask(void* param)
 {
-    static const std::size_t kNotifyThreshold = 1600;
-    static const std::size_t kBufferSize = I2S_DMA_BUFFER_LEN * I2S_SAMPLE_BYTES * I2S_SAMPLE_BYTES;
+    static const size_t kNotifyThreshold = 1600;
+    static const size_t kBufferSize = I2S_DMA_BUFFER_LEN * I2S_SAMPLE_BYTES * I2S_SAMPLE_BYTES;
 
     assert(param != nullptr);
     MemsMicrophone* mic = static_cast<MemsMicrophone*>(param);
 
-    std::size_t totalBytes{0};
+    size_t totalBytes{0};
     uint8_t buffer[kBufferSize];
     while (true) {
-        std::size_t bytesRead{0};
+        size_t bytesRead{0};
         bytesRead = mic->pullData(buffer, kBufferSize);
         if (bytesRead > 0) {
             mic->processData(buffer, bytesRead);
@@ -104,7 +112,8 @@ void MemsMicrophone::pullDataTask(void* param)
     }
 }
 
-void MemsMicrophone::notify()
+void
+MemsMicrophone::notify()
 {
     xTaskNotify(_waiter, 1, eSetBits);
 }

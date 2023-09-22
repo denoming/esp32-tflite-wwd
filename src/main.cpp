@@ -1,18 +1,17 @@
 #include <freertos/FreeRTOS.h>
 
-#include <esp_err.h>
 #include <esp_log.h>
 
 #include "Config.hpp"
 #include "NeuralNetwork.hpp"
 #include "AudioProcessor.hpp"
-#include "AudioBuffer.hpp"
 #include "MemsMicrophone.hpp"
 #include "MemoryPool.hpp"
 
 static const char* TAG = "ESP32 TFLITE WWD - Main";
 
-extern "C" void app_main()
+extern "C" void
+app_main()
 {
     static const TickType_t kMaxBlockTime = pdMS_TO_TICKS(100);
     static const float kDetectionThreshold = 0.9;
@@ -30,7 +29,8 @@ extern "C" void app_main()
         vTaskSuspend(NULL);
     }
 
-    AudioProcessor audioProcessor{WWD_AUDIO_LENGTH, WWD_WINDOW_SIZE, WWD_STEP_SIZE, WWD_POOLING_SIZE};
+    AudioProcessor audioProcessor{
+        WWD_AUDIO_LENGTH, WWD_WINDOW_SIZE, WWD_STEP_SIZE, WWD_POOLING_SIZE};
     while (true) {
         const uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, kMaxBlockTime);
         if (notificationValue > 0) {

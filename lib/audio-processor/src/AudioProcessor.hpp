@@ -12,10 +12,12 @@ public:
 
     ~AudioProcessor();
 
-    void getSpectrogram(AudioBuffer& buffer, float* outputSpectrogram);
+    void
+    getSpectrogram(AudioBuffer& buffer, float* outputSpectrogram);
 
 private:
-    void getSpectrogramSegment(float* outputSpectrogramRow);
+    void
+    getSpectrogramSegment(float* outputSpectrogramRow);
 
 private:
     int _audioLength;

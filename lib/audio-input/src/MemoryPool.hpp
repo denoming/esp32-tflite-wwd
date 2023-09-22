@@ -16,12 +16,14 @@ public:
             _payload.fill(0);
         }
 
-        void set(size_t index, uint16_t value)
+        void
+        set(size_t index, uint16_t value)
         {
             _payload[index] = value;
         }
 
-        uint16_t get(size_t index) const
+        uint16_t
+        get(size_t index) const
         {
             return _payload[index];
         }
@@ -35,11 +37,14 @@ public:
 
     ~MemoryPool();
 
-    static inline size_t capacity();
+    static inline size_t
+    capacity();
 
-    void set(size_t index, uint16_t value);
+    void
+    set(size_t index, uint16_t value);
 
-    uint16_t get(size_t index) const;
+    uint16_t
+    get(size_t index) const;
 
 private:
     std::array<Chunk*, ChunkCount> _chunks;
@@ -47,7 +52,8 @@ private:
 
 // Inlines
 
-size_t MemoryPool::capacity()
+size_t
+MemoryPool::capacity()
 {
     return (ChunkCount * ChunkSize);
 }

@@ -9,21 +9,28 @@ class AudioBuffer final {
 public:
     explicit AudioBuffer(MemoryPool& memoryPool);
 
-    void set(std::int16_t sample);
+    void
+    set(std::int16_t sample);
 
-    std::int16_t get() const;
+    int16_t
+    get() const;
 
-    void put(std::int16_t sample);
+    void
+    put(int16_t sample);
 
-    std::int16_t next();
+    int16_t
+    next();
 
-    int pos() const;
+    int
+    pos() const;
 
-    void seek(int index);
+    void
+    seek(int index);
 
-    AudioBuffer clone();
+    AudioBuffer
+    clone();
 
 private:
     MemoryPool& _memoryPool;
-    std::size_t _index;
+    size_t _index;
 };
