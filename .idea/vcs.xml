@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/components/esp-kissfft" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/components/esp-nn" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/components/esp-tflite-micro" vcs="Git" />
+  </component>
+</project>
