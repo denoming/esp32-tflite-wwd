@@ -12,22 +12,22 @@ public:
     void
     set(std::int16_t sample);
 
-    int16_t
+    [[nodiscard]] int16_t
     get() const;
 
     void
     put(int16_t sample);
 
-    int16_t
+    [[nodiscard]] int16_t
     next();
 
-    int
+    [[nodiscard]] int
     pos() const;
 
     void
     seek(int index);
 
-    AudioBuffer
+    [[nodiscard]] AudioBuffer
     clone();
 
 private:

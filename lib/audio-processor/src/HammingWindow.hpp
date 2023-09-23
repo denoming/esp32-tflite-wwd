@@ -4,7 +4,7 @@
 
 class HammingWindow {
 public:
-    HammingWindow(int windowSize);
+    explicit HammingWindow(int windowSize);
 
     void
     applyWindow(float* input);

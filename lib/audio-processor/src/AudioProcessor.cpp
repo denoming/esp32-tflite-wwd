@@ -21,9 +21,9 @@ getMeanValue(AudioBuffer buffer, int audioLength)
 {
     float mean{0.0};
     for (int i = 0; i < audioLength; i++) {
-        mean += buffer.next();
+        mean += static_cast<float>(buffer.next());
     }
-    return (mean / audioLength);
+    return (mean / float(audioLength));
 }
 
 float
@@ -45,14 +45,14 @@ AudioProcessor::AudioProcessor(int audioLength, int windowSize, int stepSize, in
     , _poolingSize{poolingSize}
     , _fftSize{getInputSize(windowSize)}
     , _energySize{_fftSize / 2 + 1}
-    , _pooledEnergySize{static_cast<int>(ceilf(_energySize / static_cast<float>(poolingSize)))}
+    , _pooledEnergySize{static_cast<int>(ceilf(float(_energySize) / float(poolingSize)))}
     , _hammingWindow{windowSize}
 {
-    _fftInput.reset(new float[_fftSize]);
-    _fftOutput.reset(new kiss_fft_cpx[_energySize]);
-    _energy.reset(new float[_energySize]);
+    _fftInput = std::make_unique<float[]>(_fftSize);
+    _fftOutput = std::make_unique<kiss_fft_cpx[]>(_energySize);
+    _energy = std::make_unique<float[]>(_energySize);
 
-    _cfg = kiss_fftr_alloc(_fftSize, false, 0, 0);
+    _cfg = kiss_fftr_alloc(_fftSize, false, nullptr, nullptr);
 }
 
 AudioProcessor::~AudioProcessor()
@@ -105,7 +105,7 @@ AudioProcessor::getSpectrogramSegment(float* outputSpectrogramRow)
                 outputSrc++;
             }
         }
-        *outputDst = average / _poolingSize;
+        *outputDst = average / float(_poolingSize);
         outputDst++;
     }
 

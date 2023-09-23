@@ -13,7 +13,7 @@ std::unique_ptr<float[]> getCoefficients(int windowSize)
     const float arg = M_PI * 2.0 / windowSize;
     for (int i = 0; i < windowSize; ++i) {
         // Scale it to fixed point and round it.
-        coefficients[i] = 0.5 - (0.5 * std::cos(arg * (i + 0.5)));
+        coefficients[i] = 0.5f - (0.5f * std::cos(arg * (float(i) + 0.5f)));
     }
     return coefficients;
 }

@@ -38,7 +38,7 @@ MemsMicrophone::start(TaskHandle_t waiter)
 
     _waiter = waiter;
     const auto rv = xTaskCreatePinnedToCore(&MemsMicrophone::pullAudioDataTask,
-                                            "MEMS microphone pull data task",
+                                            "PULL_DATA",
                                             kTaskStackDepth,
                                             this,
                                             tskIDLE_PRIORITY,
@@ -75,7 +75,7 @@ MemsMicrophone::processAudioData(const uint8_t* buffer, size_t size)
     const auto* samples = reinterpret_cast<const int32_t*>(buffer);
     assert(samples != nullptr);
     for (int i = 0; i < size / sizeof(int32_t); ++i) {
-        _buffer.put(samples[i] >> kDataBitShift);
+        _buffer.put(static_cast<int16_t>(samples[i] >> kDataBitShift));
     }
 }
 
@@ -106,5 +106,6 @@ MemsMicrophone::pullAudioDataTask(void* param)
 void
 MemsMicrophone::notify()
 {
+    /* send a direct to task notification  */
     xTaskNotify(_waiter, 1, eSetBits);
 }

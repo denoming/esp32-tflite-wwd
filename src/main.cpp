@@ -10,34 +10,32 @@
 
 static const char* TAG = "ESP32 TFLITE WWD - Main";
 
-extern "C" void
+extern "C" [[noreturn]] void
 app_main()
 {
-    static const TickType_t kMaxBlockTime = pdMS_TO_TICKS(100);
+    static const TickType_t kMaxBlockTime = pdMS_TO_TICKS(300);
     static const float kDetectionThreshold = 0.9;
 
     NeuralNetwork nn;
     if (!nn.setUp()) {
-        ESP_LOGE(TAG, "Failed to set-up neural network");
-        vTaskSuspend(NULL);
+        ESP_LOGE(TAG, "Unable to set-up neural network");
+        vTaskSuspend(nullptr);
     }
 
     MemoryPool memoryPool;
     MemsMicrophone mic{memoryPool};
     if (!mic.start(xTaskGetCurrentTaskHandle())) {
-        ESP_LOGE(TAG, "Failed to start microphone");
-        vTaskSuspend(NULL);
+        ESP_LOGE(TAG, "Unable to start microphone");
+        vTaskSuspend(nullptr);
     }
 
-    AudioProcessor audioProcessor{
-        WWD_AUDIO_LENGTH, WWD_WINDOW_SIZE, WWD_STEP_SIZE, WWD_POOLING_SIZE};
+    AudioProcessor processor{WWD_AUDIO_LENGTH, WWD_WINDOW_SIZE, WWD_STEP_SIZE, WWD_POOLING_SIZE};
     while (true) {
-        const uint32_t notificationValue = ulTaskNotifyTake(pdTRUE, kMaxBlockTime);
-        if (notificationValue > 0) {
+        if (ulTaskNotifyTake(pdTRUE, kMaxBlockTime) > 0 /* notification value after reset */) {
             auto buffer = mic.buffer();
             buffer.seek(buffer.pos() - I2S_SAMPLE_RATE);
             float* inputBuffer = nn.getInputBuffer();
-            audioProcessor.getSpectrogram(buffer, inputBuffer);
+            processor.getSpectrogram(buffer, inputBuffer);
             const float output = nn.predict();
             if (output > kDetectionThreshold) {
                 ESP_LOGI(TAG, "Detected: %.2f", output);

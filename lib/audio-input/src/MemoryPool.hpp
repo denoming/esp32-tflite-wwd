@@ -12,17 +12,18 @@ public:
     class Chunk {
     public:
         Chunk()
+            : _payload{}
         {
             _payload.fill(0);
         }
 
         void
-        set(size_t index, uint16_t value)
+        set(size_t index, int16_t value)
         {
             _payload[index] = value;
         }
 
-        uint16_t
+        [[nodiscard]] int16_t
         get(size_t index) const
         {
             return _payload[index];
@@ -41,9 +42,9 @@ public:
     capacity();
 
     void
-    set(size_t index, uint16_t value);
+    set(size_t index, int16_t value);
 
-    uint16_t
+    [[nodiscard]] int16_t
     get(size_t index) const;
 
 private:
