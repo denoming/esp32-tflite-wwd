@@ -11,3 +11,8 @@ CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 
 # Increase FreeRTOS clock frequency
 CONFIG_FREERTOS_HZ=1000
+
+# Disable task watchdog by default (suppress warnings in recognize)
+# CPU0 - recognition loop (potential source of warnings)
+# CPU1 - pulling data loop
+CONFIG_ESP_TASK_WDT_EN=n

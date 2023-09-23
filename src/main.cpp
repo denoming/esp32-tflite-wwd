@@ -29,6 +29,9 @@ app_main()
         vTaskSuspend(nullptr);
     }
 
+    /**
+     * Recognition loop (main task: CPU0)
+     */
     AudioProcessor processor{WWD_AUDIO_LENGTH, WWD_WINDOW_SIZE, WWD_STEP_SIZE, WWD_POOLING_SIZE};
     while (true) {
         if (ulTaskNotifyTake(pdTRUE, kMaxBlockTime) > 0 /* notification value after reset */) {

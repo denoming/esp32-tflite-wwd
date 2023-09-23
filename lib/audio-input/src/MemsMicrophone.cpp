@@ -88,6 +88,9 @@ MemsMicrophone::pullAudioDataTask(void* param)
     assert(param != nullptr);
     auto* mic = static_cast<MemsMicrophone*>(param);
 
+    /**
+     * Pulling audio data loop (PULL_DATA task: CPU1)
+     */
     size_t totalBytes{0};
     uint8_t buffer[kBufferSize];
     while (true) {
