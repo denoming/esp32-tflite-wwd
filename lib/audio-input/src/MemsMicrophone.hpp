@@ -1,16 +1,16 @@
 #pragma once
 
-#include <driver/i2s.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
+#include <driver/i2s_std.h>
 
 #include "AudioBuffer.hpp"
 #include "AudioInputSampler.hpp"
 
 class MemsMicrophone final : public AudioInputSampler {
 public:
-    MemsMicrophone(i2s_pin_config_t pins,
-                   i2s_port_t port,
-                   i2s_config_t config,
-                   MemoryPool& memoryPool);
+    explicit MemsMicrophone(MemoryPool& memoryPool);
 
     bool
     start(TaskHandle_t waiter) override;
@@ -20,22 +20,19 @@ public:
 
 private:
     size_t
-    pullData(uint8_t* buffer, size_t size);
+    pullAudioData(uint8_t* buffer, size_t size);
 
     void
-    processData(const uint8_t* buffer, size_t size);
+    processAudioData(const uint8_t* buffer, size_t size);
 
     void
     notify();
 
-    static void
-    pullDataTask(void* param);
+    [[noreturn]] static void
+    pullAudioDataTask(void* param);
 
 private:
-    i2s_pin_config_t _pins;
-    i2s_port_t _port;
-    i2s_config_t _config;
+    i2s_chan_handle_t _channelHandle;
     AudioBuffer _buffer;
-    QueueHandle_t _queue;
     TaskHandle_t _waiter;
 };

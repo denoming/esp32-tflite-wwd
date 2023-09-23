@@ -23,7 +23,7 @@ app_main()
     }
 
     MemoryPool memoryPool;
-    MemsMicrophone mic{I2S_PIN_CONFIG, I2S_INMP441_PORT, I2S_CONFIG, memoryPool};
+    MemsMicrophone mic{memoryPool};
     if (!mic.start(xTaskGetCurrentTaskHandle())) {
         ESP_LOGE(TAG, "Failed to start microphone");
         vTaskSuspend(NULL);
