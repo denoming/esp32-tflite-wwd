@@ -6,6 +6,20 @@
 
 class MemoryPool final {
 public:
+    MemoryPool();
+
+    ~MemoryPool();
+
+    static inline size_t
+    capacity();
+
+    void
+    set(size_t index, int16_t value);
+
+    [[nodiscard]] int16_t
+    get(size_t index) const;
+
+private:
     static const size_t ChunkCount = 5;
     static const size_t ChunkSize = 16000;
 
@@ -14,7 +28,6 @@ public:
         Chunk()
             : _payload{}
         {
-            _payload.fill(0);
         }
 
         void
@@ -33,19 +46,12 @@ public:
         std::array<int16_t, ChunkSize> _payload;
     };
 
-public:
-    MemoryPool();
-
-    ~MemoryPool();
-
-    static inline size_t
-    capacity();
+private:
+    void
+    allocate();
 
     void
-    set(size_t index, int16_t value);
-
-    [[nodiscard]] int16_t
-    get(size_t index) const;
+    deallocate();
 
 private:
     std::array<Chunk*, ChunkCount> _chunks;

@@ -5,16 +5,12 @@
 MemoryPool::MemoryPool()
     : _chunks{}
 {
-    for (int i = 0; i < ChunkCount; ++i) {
-        _chunks[i] = new Chunk;
-    }
+    allocate();
 }
 
 MemoryPool::~MemoryPool()
 {
-    for (int i = 0; i < ChunkCount; ++i) {
-        delete _chunks[i];
-    }
+    deallocate();
 }
 
 void
@@ -33,4 +29,21 @@ MemoryPool::get(size_t index) const
     const long chunkIdx = long(index / ChunkSize) % long(ChunkCount);
     const long chunkPos = long(index % ChunkSize);
     return _chunks[chunkIdx]->get(chunkPos);
+}
+
+void
+MemoryPool::allocate()
+{
+    for (int i = 0; i < ChunkCount; ++i) {
+        _chunks[i] = new Chunk;
+    }
+}
+
+void
+MemoryPool::deallocate()
+{
+    for (int i = 0; i < ChunkCount; ++i) {
+        delete _chunks[i];
+        _chunks[i] = nullptr;
+    }
 }
