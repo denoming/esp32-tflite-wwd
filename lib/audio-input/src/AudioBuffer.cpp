@@ -39,7 +39,7 @@ AudioBuffer::next()
     return sample;
 }
 
-int
+size_t
 AudioBuffer::pos() const
 {
     return _index;

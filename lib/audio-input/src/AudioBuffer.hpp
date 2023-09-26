@@ -10,7 +10,7 @@ public:
     explicit AudioBuffer(MemoryPool& memoryPool);
 
     void
-    set(std::int16_t sample);
+    set(int16_t sample);
 
     [[nodiscard]] int16_t
     get() const;
@@ -18,10 +18,10 @@ public:
     void
     put(int16_t sample);
 
-    [[nodiscard]] int16_t
+    [[maybe_unused]] int16_t
     next();
 
-    [[nodiscard]] int
+    [[nodiscard]] size_t
     pos() const;
 
     void
